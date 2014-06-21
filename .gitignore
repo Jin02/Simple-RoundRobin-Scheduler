@@ -19,3 +19,13 @@
 *.exe
 *.out
 *.app
+
+.DS_Store
+*.swp
+*~.nib
+
+build/
+
+*.pbxuser
+*.perspective
+*.perspectivev3
