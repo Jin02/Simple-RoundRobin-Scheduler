@@ -53,10 +53,8 @@ public:
     {
         _ipcKey = msgget(_pid, MSGGET_CREATE_FLAG);
         
-#ifdef __DEBUG_SIMULATION__
         if (_ipcKey == -1)
             perror("msgget");
-#endif
         
         return _ipcKey != -1;
     }

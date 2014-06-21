@@ -35,6 +35,8 @@ public:
     
     virtual void Run();
     
+    ChildProcess* FindChildProcess(int pid);
+    
 public:
     ParentProcess(int pid);
     ~ParentProcess();

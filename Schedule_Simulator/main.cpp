@@ -19,7 +19,11 @@ BaseProcess* CreateProcess(int count)
     {
         pid_t pid = fork();
         if( pid == 0 )
-            return new ChildProcess(getpid());
+        {
+            ChildProcess* child = new ChildProcess(getpid());
+            child->CreateMsgQueue();
+            return child;
+        }
         
         if(parent == NULL)
             parent = new ParentProcess(getpid());
@@ -40,19 +44,6 @@ BaseProcess* CreateProcess(int count)
 int main(int argc, const char * argv[])
 {
     BaseProcess* process = CreateProcess(NUM);
-    
-//    if(isParent)
-//    {
-//        msgbuf buf;
-//        buf.testValue = 22;
-//        int res = msgsnd(childIPCKey[0], (void*)&buf, sizeof(struct msgbuf), IPC_NOWAIT);
-//        printf("Parent Send! %d // res = %d \n", childIPCKey[0], res);
-//        if(res == -1)
-//        {
-//            perror("msgsnd");
-//        }
-//    }
-    
     process->Run();
     return 0;
 }

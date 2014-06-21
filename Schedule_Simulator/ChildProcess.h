@@ -31,14 +31,22 @@ public:
         _cpuBurstTime = 5;
         _ioBurstTime = 3;
         
+        printf("Child IPC %d %d\n", _ipcKey, _pid);
         while (_ipcKey != -1)
         {
             ParentToChildMsgBuffer rcvBuffer;
+            //printf("Child On!\n");
             ssize_t rcvRes = msgrcv(_ipcKey, (void*)&rcvBuffer,
                                     sizeof(rcvBuffer),
                                     0, 0);
 
-            if(rcvRes < 0) continue;
+            if(rcvRes < 0)
+            {
+                perror("msgrcv");
+                continue;
+            }
+
+            printf("Child Rcv! %d %d\n", _pid, _cpuBurstTime);
             
             if( --_cpuBurstTime < 0 )
             {
@@ -53,6 +61,12 @@ public:
                     perror("msgsnd");
             }
         }
+    }
+    
+    void UpdateData(const ChildToParentMsgBuffer& buffer)
+    {
+        _cpuBurstTime = buffer.remainsCPUBurstTime;
+        _ioBurstTime = buffer.remainsIOBurstTime;
     }
     
 public:

@@ -48,28 +48,37 @@ void ParentProcess::AddChildProcess(pid_t pid)
     _run.push(child);
 }
 
+void ParentProcess::NextProcess()
+{
+    _wait.push_back(_run.front());
+    _run.pop();
+    
+    _tick = 0;
+}
+
 void ParentProcess::_EventLog()
 {
     if (_run.empty() == false)
     {
         ChildProcess* child = _run.front();
+        
+        if(child->GetCPUBurstTime() <= 0)
+            return;
     
         _sndBuffer.pid = _pid;
         _sndBuffer.ipcKey = _ipcKey;
 
+        int res = msgsnd(child->GetIPCKey(), (void*)&_sndBuffer, sizeof(_sndBuffer), IPC_NOWAIT);
     
-        if( msgsnd(child->GetIPCKey(), (void*)&_sndBuffer, sizeof(_sndBuffer), IPC_NOWAIT) < 0)
+        if( res < 0)
         {
             //error
         }
         else
         {
-            if( ++_tick > TIME_SLICE )
+            if( ++_tick > TIME_SLICE)
             {
-                _wait.push_back(_run.front());
-                _run.pop();
-            
-                _tick = 0;
+                NextProcess();
             }
         }
     }
@@ -99,6 +108,23 @@ void ParentProcess::EventLog(int signo)
         pc->_EventLog();
 }
 
+ChildProcess* ParentProcess::FindChildProcess(int pid)
+{
+    for( auto iter = _run.front(); iter != _run.back()+1; ++iter)
+    {
+        if(iter->GetPid() == pid)
+            return iter;
+    }
+    
+    for( auto iter = _wait.begin(); iter != _wait.end(); ++iter )
+    {
+        if( (*iter)->GetPid() == pid )
+            return (*iter);
+    }
+    
+    return nullptr;
+}
+
 void ParentProcess::Run()
 {
     while (_ipcKey != -1)
@@ -106,7 +132,7 @@ void ParentProcess::Run()
         ChildToParentMsgBuffer rcvBuffer;
         ssize_t rcvRes = msgrcv(_ipcKey, (void*)&rcvBuffer,
                                 sizeof(rcvBuffer),
-                                0, 0);
+                                0, IPC_NOWAIT);
         
         if(rcvRes < 0)
         {
@@ -116,9 +142,11 @@ void ParentProcess::Run()
         }
         else
         {
-            //이제 만들어야할건, 자식이 미리 끝나버린 경우.
-            //혹은, 다끝난경우 받을 ioBurst값.
+            ChildProcess* child = FindChildProcess(rcvBuffer.pid);
+            child->UpdateData(rcvBuffer);
             
+            if(rcvBuffer.remainsCPUBurstTime <= 0)
+                NextProcess();
         }
     }
 }
