@@ -22,8 +22,6 @@
 #include "Common.h"
 #include "MsgBuffer.h"
 
-
-
 class BaseProcess
 {
 public:
@@ -86,30 +84,7 @@ public:
         kill(_pid, SIGKILL);
     }
     
-protected:
-    virtual void _Run() = 0;
-    
 public:
-    void Run()
-    {
-        while (_ipcKey != -1)
-        {
-            MsgBuffer buffer;
-            ssize_t rcvRes = msgrcv(_ipcKey, (void*)&buffer,
-                                    sizeof(MsgBuffer),
-                                    0, 0);
-
-            if(rcvRes < 0)
-            {
-                perror("msgrcv");
-                printf( _type == PARENT ?
-                       "parent Error rcv \n" : "child Error rcv \n");
-            }
-            else
-            {
-                _Run();
-            }            
-        }
-    }
+    virtual void Run() = 0;
     
 };

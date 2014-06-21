@@ -8,18 +8,68 @@
 
 #pragma once
 
-class MsgBuffer
+#include "Common.h"
+
+struct MsgBuffer
 {
-private:
-    int t;
+    int pid;
+    int ipcKey;
     
-public:
-    MsgBuffer()
+    MsgBuffer(int pid, int ipcKey)
     {
-        
+        this->pid = pid;
+        this->ipcKey = ipcKey;
     }
     
     ~MsgBuffer()
+    {
+        
+    }
+};
+
+struct ParentToChildMsgBuffer : public MsgBuffer
+{
+    int timeSlice;
+    
+    ParentToChildMsgBuffer(int timeSlice, int pid, int ipcKey)
+    : MsgBuffer(pid, ipcKey)
+    {
+        this->timeSlice = timeSlice;
+    }
+    
+    ParentToChildMsgBuffer()
+    : MsgBuffer(-1, -1)
+    {
+        timeSlice = 0;
+    }
+    
+    ~ParentToChildMsgBuffer()
+    {
+        
+    }
+};
+
+struct ChildToParentMsgBuffer : public MsgBuffer
+{
+    int remainsCPUBurstTime;
+    int remainsIOBurstTime;
+    
+    ChildToParentMsgBuffer(int remainsCPUBurstTime,
+                           int remainsIOBurstTime, int pid, int ipcKey)
+    : MsgBuffer(pid, ipcKey)
+    {
+        this->remainsIOBurstTime = remainsIOBurstTime;
+        this->remainsCPUBurstTime = remainsCPUBurstTime;
+    }
+    
+    ChildToParentMsgBuffer()
+    :MsgBuffer(-1, -1)
+    {
+        this->remainsIOBurstTime = 0;
+        this->remainsCPUBurstTime = 0;
+    }
+    
+    ~ChildToParentMsgBuffer()
     {
         
     }

@@ -10,69 +10,32 @@
 
 #include "ChildProcess.h"
 #include <queue>
+#include <list>
+
+#define TIME_SLICE 4
 
 class ParentProcess : public BaseProcess
 {
 private:
     std::queue<ChildProcess*> _run;
-    std::queue<ChildProcess*> _wait;
-    static ParentProcess* _this;
+    std::list<ChildProcess*> _wait;
+    
+    int _tick;
+    ParentToChildMsgBuffer _sndBuffer;
     
 public:
-    bool Init()
-    {
-        struct sigaction oldSighandler, newSighandler;
-        itimerval itimer, oldTimer;
-        
-        memset (&newSighandler, 0, sizeof (newSighandler));
-        newSighandler.sa_handler = &ParentProcess::Schdule;
-        sigaction(SIGALRM, &newSighandler, &oldSighandler);
-        
-        itimer.it_interval.tv_sec = 1;
-        itimer.it_interval.tv_usec = 0;
-        itimer.it_value.tv_sec = 1;
-        itimer.it_value.tv_usec = 0;
-        setitimer(ITIMER_REAL, &itimer, &oldTimer);
-        
-        return CreateMsgQueue();
-    }
+    bool Init();
     
-    void AddChildProcess(pid_t pid)
-    {
-        ChildProcess* child = new ChildProcess(pid);
-        child->CreateMsgQueue();
-        _wait.push(child);
-    }
+    void AddChildProcess(pid_t pid);
     
-    static void Schdule(int signo)
-    {
-        ParentProcess* pc = ParentProcess::_this;
-        if(pc == NULL)      return;
-        
-        
-        
-    }
+    void NextProcess();
     
-    virtual void _Run()
-    {
-        
-    }
+    void _EventLog();
+    static void EventLog(int signo);
     
+    virtual void Run();
     
 public:
-    ParentProcess() : BaseProcess()
-    {
-        _type = TYPE::PARENT;
-        _this = this;
-    }
-    
-    ParentProcess(int pid) : BaseProcess(pid)
-    {
-        _type = TYPE::PARENT;
-    }
-    
-    ~ParentProcess()
-    {
-        
-    }
+    ParentProcess(int pid);
+    ~ParentProcess();
 };

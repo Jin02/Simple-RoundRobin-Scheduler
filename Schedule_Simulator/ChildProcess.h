@@ -10,22 +10,50 @@
 
 #include "BaseProcess.h"
 
+
 class ChildProcess : public BaseProcess
 {
 private:
     int     _cpuBurstTime;
     int     _ioBurstTime;
+    ChildToParentMsgBuffer _sndBuffer;
     
 public:
     GET(CPUBurstTime, int, _cpuBurstTime);
+
     GET(IOBurstTime, int, _ioBurstTime);
+    SET(IOBurstTime, int, _ioBurstTime);
     
 public:
-    virtual void _Run()
+    virtual void Run()
     {
+        //이제 할거 없어. 걱정말고 끝내
+        _cpuBurstTime = 5;
+        _ioBurstTime = 3;
         
-    }
+        while (_ipcKey != -1)
+        {
+            ParentToChildMsgBuffer rcvBuffer;
+            ssize_t rcvRes = msgrcv(_ipcKey, (void*)&rcvBuffer,
+                                    sizeof(rcvBuffer),
+                                    0, 0);
 
+            if(rcvRes < 0) continue;
+            
+            if( --_cpuBurstTime < 0 )
+            {
+                _sndBuffer.ipcKey = _ipcKey;
+                _sndBuffer.pid = _pid;
+                _sndBuffer.remainsIOBurstTime = _ioBurstTime;
+                _sndBuffer.remainsCPUBurstTime = _cpuBurstTime;
+            
+                rcvRes = msgsnd(rcvBuffer.ipcKey, (void*)&_sndBuffer, sizeof(ChildToParentMsgBuffer), IPC_NOWAIT);
+            
+                if(rcvRes < 0)
+                    perror("msgsnd");
+            }
+        }
+    }
     
 public:
     ChildProcess() : BaseProcess(),
