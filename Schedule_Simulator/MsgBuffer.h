@@ -34,17 +34,20 @@ struct ParentToChildMsgBuffer : public MsgBuffer
     };
     //TYPE type;
     int type;
+    int tick;
     
     ParentToChildMsgBuffer(int type, int pid, int ipcKey)
     : MsgBuffer(pid, ipcKey)
     {
         this->type = type;
+        tick = 0;
     }
     
     ParentToChildMsgBuffer()
     : MsgBuffer(-1, -1)
     {
         type = NONE;
+        tick = 0;
     }
     
     ~ParentToChildMsgBuffer()

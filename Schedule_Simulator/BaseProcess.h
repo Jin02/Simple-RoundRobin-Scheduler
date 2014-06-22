@@ -49,41 +49,17 @@ public:
     GET(IPCKey, int, _ipcKey);
     GET(Pid, pid_t, _pid);
     
-public:
-    bool CreateMsgQueue()
-    {
-        _ipcKey = msgget(_pid, MSGGET_CREATE_FLAG);
-        
-        if (_ipcKey == -1)
-            perror("msgget");
-        
-        return _ipcKey != -1;
-    }
+protected:
+    static void FileWrite(const char* txt);
     
+public:
+    bool CreateMsgQueue();
         
 public:
-    BaseProcess()
-    {
-        _pid = -1;
-        _ipcKey = -1;
-        _state = STATE::WAIT;
-        _type = TYPE::CHILD;
-    }
-    
-    BaseProcess(int pid)
-    {
-        _pid = pid;
-        _ipcKey = -1;
-        _state = STATE::WAIT;
-        _type = TYPE::CHILD;
-    }
-    
-    virtual ~BaseProcess()
-    {
-        kill(_pid, SIGKILL);
-    }
+    BaseProcess();
+    BaseProcess(int pid);
+    virtual ~BaseProcess();
     
 public:
     virtual void Run() = 0;
-    
 };

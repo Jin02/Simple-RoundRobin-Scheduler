@@ -8,7 +8,7 @@
 
 #pragma once
 
-#define __DEBUG_SIMULATION__
+#include <stdio.h>
 
 #define GET(n, x, y) inline x Get##n()const { return y; }
 #define SET(n, x, y) inline void Set##n(x t)	{ y = t; }

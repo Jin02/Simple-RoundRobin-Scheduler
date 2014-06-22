@@ -14,9 +14,9 @@
 class ChildProcess : public BaseProcess
 {
 private:
-    int     _cpuBurstTime;
-    int     _ioBurstTime;
-    ChildToParentMsgBuffer _sndBuffer;
+    int                     _cpuBurstTime;
+    int                     _ioBurstTime;
+    ChildToParentMsgBuffer  _sndBuffer;
     
 public:
     GET(CPUBurstTime, int, _cpuBurstTime);
@@ -25,73 +25,15 @@ public:
     GET(IOBurstTime, int, _ioBurstTime);
     SET(IOBurstTime, int, _ioBurstTime);
     
-public:
-    virtual void Run()
-    {
-        //init
-        _cpuBurstTime = 5;
-        _ioBurstTime = 10;
-        
-        printf("Child IPC %d %d\n", _ipcKey, _pid);
-        while (_ipcKey != -1)
-        {
-            ParentToChildMsgBuffer rcvBuffer;
-            //printf("Child On!\n");
-            ssize_t rcvRes = msgrcv(_ipcKey, (void*)&rcvBuffer,
-                                    sizeof(rcvBuffer),
-                                    0, 0);
-
-            if(rcvRes < 0)
-            {
-                perror("msgrcv");
-                continue;
-            }
-            
-            if(rcvBuffer.type == ParentToChildMsgBuffer::RESET)
-            {
-                _cpuBurstTime = 5;
-                _ioBurstTime = 10;
-            }
-
-            printf("Child Rcv! %d %d\n", _pid, _cpuBurstTime);
-            
-            if( --_cpuBurstTime < 0 )
-            {
-                _sndBuffer.ipcKey = _ipcKey;
-                _sndBuffer.pid = _pid;
-                _sndBuffer.remainsIOBurstTime = _ioBurstTime;
-                _sndBuffer.remainsCPUBurstTime = _cpuBurstTime;
-            
-                rcvRes = msgsnd(rcvBuffer.ipcKey, (void*)&_sndBuffer, sizeof(ChildToParentMsgBuffer), IPC_NOWAIT);
-            
-                if(rcvRes < 0)
-                    perror("msgsnd");
-            }
-        }
-    }
-    
-    void UpdateData(const ChildToParentMsgBuffer& buffer)
-    {
-        _cpuBurstTime = buffer.remainsCPUBurstTime;
-        _ioBurstTime = buffer.remainsIOBurstTime;
-    }
+private:
+    void GenerateRandomBurstTime();
     
 public:
-    ChildProcess() : BaseProcess(),
-    _cpuBurstTime(0),
-    _ioBurstTime(0)
-    {
-    }
+    virtual void Run();
+    void UpdateData(const ChildToParentMsgBuffer& buffer);
     
-    ChildProcess(int pid) : BaseProcess(pid),
-    _cpuBurstTime(0),
-    _ioBurstTime(0)
-    {
-        
-    }
-    
-    ~ChildProcess()
-    {
-        //nothing
-    }
+public:
+    ChildProcess();
+    ChildProcess(int pid);
+    ~ChildProcess();
 };

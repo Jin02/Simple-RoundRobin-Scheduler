@@ -12,7 +12,7 @@
 #include <queue>
 #include <list>
 
-#define TIME_SLICE 4
+#define TIME_SLICE 20
 
 class ParentProcess : public BaseProcess
 {
@@ -20,8 +20,10 @@ private:
     std::queue<ChildProcess*> _run;
     std::list<ChildProcess*> _wait;
     
-    int _tick;
     ParentToChildMsgBuffer _sndBuffer;
+
+    int _tick;
+    int _globalTick;
     
 public:
     bool Init();
@@ -30,8 +32,8 @@ public:
     
     void NextProcess();
     
-    void _EventLog();
-    static void EventLog(int signo);
+    void _Scheduler();
+    static void Scheduler(int signo);
     
     virtual void Run();
     

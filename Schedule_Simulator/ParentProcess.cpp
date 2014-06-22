@@ -7,6 +7,7 @@
 //
 
 #include "ParentProcess.h"
+#include <string>
 
 static ParentProcess* _this = NULL;
 
@@ -16,8 +17,7 @@ ParentProcess::ParentProcess(int pid)
     _type = TYPE::PARENT;
     _this = this;
     _tick = 0;
-    
-
+    _globalTick = 0;
 }
 
 ParentProcess::~ParentProcess()
@@ -31,7 +31,7 @@ bool ParentProcess::Init()
     itimerval itimer, oldTimer;
     
     memset (&newSighandler, 0, sizeof (newSighandler));
-    newSighandler.sa_handler = &ParentProcess::EventLog;
+    newSighandler.sa_handler = &ParentProcess::Scheduler;
     sigaction(SIGALRM, &newSighandler, &oldSighandler);
     
     itimer.it_interval.tv_sec = 1;
@@ -54,8 +54,13 @@ void ParentProcess::NextProcess()
 {
 }
 
-void ParentProcess::_EventLog()
+void ParentProcess::_Scheduler()
 {
+    std::string fileContent = "";
+    char txt[256] = {0, };
+    
+    ++_globalTick;
+    
     if (_run.empty() == false)
     {
         ChildProcess* child = _run.front();
@@ -73,16 +78,15 @@ void ParentProcess::_EventLog()
         
         _sndBuffer.pid = _pid;
         _sndBuffer.ipcKey = _ipcKey;
+        _sndBuffer.tick = _globalTick;
 
         int res = msgsnd(child->GetIPCKey(), (void*)&_sndBuffer, sizeof(ParentToChildMsgBuffer), IPC_NOWAIT);
     
         if( res < 0)
-        {
-            //error
             perror("msgsnd");
-        }
         else
         {
+            //runQ 덤프랑 wQ덤프는?
             if( ++_tick > TIME_SLICE)
             {
                 _run.push(_run.front());
@@ -93,12 +97,33 @@ void ParentProcess::_EventLog()
         }
     }
     
+    sprintf(txt, "run  |\t time : %d / ", _globalTick);
+    fileContent+=txt;
+    
+    std::queue<ChildProcess*> swap;
+    while (_run.empty() == false)
+    {
+        sprintf(txt, "pid : %d / ", _run.front()->GetPid());
+        fileContent+=txt;
+        swap.push(_run.front());
+        _run.pop();
+    }
+    std::swap(_run, swap);
+    
+    fileContent += "\n";
+    sprintf(txt, "wait |\t time : %d / ", _globalTick);
+    fileContent += txt;
+    
     for (auto iter = _wait.begin(); iter != _wait.end();)
     {
         int io = (*iter)->GetIOBurstTime();
         if( io > 0 )
         {
             (*iter)->SetIOBurstTime( io - 1 );
+            
+            sprintf(txt, "pid : %d / io : %d / ", (*iter)->GetPid(), (*iter)->GetIOBurstTime());
+            fileContent+=txt;
+            
             ++iter;
         }
         else
@@ -107,23 +132,35 @@ void ParentProcess::_EventLog()
             iter = _wait.erase(iter);
         }
     }
-
+    fileContent+="\n";
+    printf("%s", fileContent.c_str());
+    FileWrite(fileContent.c_str());
 }
 
-void ParentProcess::EventLog(int signo)
+void ParentProcess::Scheduler(int signo)
 {
     ParentProcess* pc = _this;
 
     if(pc != NULL)
-        pc->_EventLog();
+        pc->_Scheduler();
 }
 
 ChildProcess* ParentProcess::FindChildProcess(int pid)
 {
-    for( auto iter = _run.front(); iter != _run.back()+1; ++iter)
     {
-        if(iter->GetPid() == pid)
-            return iter;
+        std::queue<ChildProcess*> swap;
+        ChildProcess* find = NULL;
+        while (_run.empty() == false)
+        {
+            if(_run.front()->GetPid() == pid)
+                find = _run.front();
+            
+            swap.push(_run.front());
+            _run.pop();
+        }
+        std::swap(_run, swap);
+        if(find != NULL)
+            return find;
     }
     
     for( auto iter = _wait.begin(); iter != _wait.end(); ++iter )
@@ -157,7 +194,7 @@ void ParentProcess::Run()
             
             if(rcvBuffer.remainsCPUBurstTime <= 0)
             {
-                printf("Done! %d\n", rcvBuffer.pid);
+//                printf("Done! %d\n", rcvBuffer.pid);
                 _wait.push_back(_run.front());
                 _run.pop();
                 

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		3CA19BA01954637700447D7F /* BaseProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3CA19B9E1954637700447D7F /* BaseProcess.cpp */; };
-		3CA19BA31954641A00447D7F /* MsgBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3CA19BA11954641A00447D7F /* MsgBuffer.cpp */; };
 		3CA19BA61954649B00447D7F /* ParentProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3CA19BA41954649B00447D7F /* ParentProcess.cpp */; };
 		3CA19BA9195464A200447D7F /* ChildProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3CA19BA7195464A200447D7F /* ChildProcess.cpp */; };
 		3CEBE91D19541A0700E32830 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3CEBE91C19541A0700E32830 /* main.cpp */; };
@@ -31,7 +30,6 @@
 /* Begin PBXFileReference section */
 		3CA19B9E1954637700447D7F /* BaseProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseProcess.cpp; sourceTree = "<group>"; };
 		3CA19B9F1954637700447D7F /* BaseProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseProcess.h; sourceTree = "<group>"; };
-		3CA19BA11954641A00447D7F /* MsgBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MsgBuffer.cpp; sourceTree = "<group>"; };
 		3CA19BA21954641A00447D7F /* MsgBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MsgBuffer.h; sourceTree = "<group>"; };
 		3CA19BA41954649B00447D7F /* ParentProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParentProcess.cpp; sourceTree = "<group>"; };
 		3CA19BA51954649B00447D7F /* ParentProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParentProcess.h; sourceTree = "<group>"; };
@@ -77,7 +75,6 @@
 				3CEBE91E19541A0700E32830 /* Schedule_Simulator.1 */,
 				3CA19B9E1954637700447D7F /* BaseProcess.cpp */,
 				3CA19B9F1954637700447D7F /* BaseProcess.h */,
-				3CA19BA11954641A00447D7F /* MsgBuffer.cpp */,
 				3CA19BA21954641A00447D7F /* MsgBuffer.h */,
 				3CA19BA41954649B00447D7F /* ParentProcess.cpp */,
 				3CA19BA51954649B00447D7F /* ParentProcess.h */,
@@ -139,7 +136,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3CA19BA31954641A00447D7F /* MsgBuffer.cpp in Sources */,
 				3CEBE91D19541A0700E32830 /* main.cpp in Sources */,
 				3CA19BA01954637700447D7F /* BaseProcess.cpp in Sources */,
 				3CA19BA9195464A200447D7F /* ChildProcess.cpp in Sources */,

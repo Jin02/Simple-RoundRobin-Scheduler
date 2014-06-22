@@ -8,7 +8,7 @@
 
 #include "ParentProcess.h"
 
-#define NUM 2
+#define NUM 10
 
 BaseProcess* CreateProcess(int count)
 {
@@ -45,6 +45,11 @@ int main(int argc, const char * argv[])
 {
     BaseProcess* process = CreateProcess(NUM);
     process->Run();
+    
+//    FILE* fp = fopen("/Users/jin/Desktop/Test.txt", "a");
+//    fprintf(fp, "test");
+//    fclose(fp);
+    
     return 0;
 }
 
