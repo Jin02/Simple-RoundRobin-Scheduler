@@ -101,6 +101,7 @@ void ParentProcess::_Scheduler()
     fileContent+=txt;
     
     std::queue<ChildProcess*> swap;
+    //큐에서 루프 돌리는 용도. stl에서 지원해주지 않아 이러한 방식 사용
     while (_run.empty() == false)
     {
         sprintf(txt, "pid : %d / ", _run.front()->GetPid());
@@ -114,7 +115,8 @@ void ParentProcess::_Scheduler()
     sprintf(txt, "wait |\t time : %d / ", _globalTick);
     fileContent += txt;
     
-    for (auto iter = _wait.begin(); iter != _wait.end();)
+    for (std::list<ChildProcess*>::iterator iter = _wait.begin();
+         iter != _wait.end();)
     {
         int io = (*iter)->GetIOBurstTime();
         if( io > 0 )
@@ -150,6 +152,7 @@ ChildProcess* ParentProcess::FindChildProcess(int pid)
     {
         std::queue<ChildProcess*> swap;
         ChildProcess* find = NULL;
+        //큐에서 루프 돌리는 용도. stl에서 지원해주지 않아 이러한 방식 사용
         while (_run.empty() == false)
         {
             if(_run.front()->GetPid() == pid)
@@ -163,7 +166,8 @@ ChildProcess* ParentProcess::FindChildProcess(int pid)
             return find;
     }
     
-    for( auto iter = _wait.begin(); iter != _wait.end(); ++iter )
+    for( std::list<ChildProcess*>::iterator iter = _wait.begin();
+        iter != _wait.end(); ++iter )
     {
         if( (*iter)->GetPid() == pid )
             return (*iter);
