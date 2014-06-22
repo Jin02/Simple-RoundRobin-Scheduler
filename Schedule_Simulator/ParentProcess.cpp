@@ -59,10 +59,18 @@ void ParentProcess::_EventLog()
     if (_run.empty() == false)
     {
         ChildProcess* child = _run.front();
-        
-        _sndBuffer.type = child->GetCPUBurstTime() < 0 ?
-            ParentToChildMsgBuffer::RESET : ParentToChildMsgBuffer::NONE;
 
+        if( child->GetCPUBurstTime() < 0 )
+        {
+            child->SetCPUBurstTime(0);
+            child->SetIOBurstTime(0);
+            _sndBuffer.type = ParentToChildMsgBuffer::RESET;
+        }
+        else
+        {
+            _sndBuffer.type = ParentToChildMsgBuffer::NONE;
+        }
+        
         _sndBuffer.pid = _pid;
         _sndBuffer.ipcKey = _ipcKey;
 

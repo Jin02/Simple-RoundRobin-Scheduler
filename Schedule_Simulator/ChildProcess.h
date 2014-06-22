@@ -20,7 +20,8 @@ private:
     
 public:
     GET(CPUBurstTime, int, _cpuBurstTime);
-
+    SET(CPUBurstTime, int, _cpuBurstTime);
+    
     GET(IOBurstTime, int, _ioBurstTime);
     SET(IOBurstTime, int, _ioBurstTime);
     
@@ -29,7 +30,7 @@ public:
     {
         //init
         _cpuBurstTime = 5;
-        _ioBurstTime = 3;
+        _ioBurstTime = 10;
         
         printf("Child IPC %d %d\n", _ipcKey, _pid);
         while (_ipcKey != -1)
@@ -49,7 +50,7 @@ public:
             if(rcvBuffer.type == ParentToChildMsgBuffer::RESET)
             {
                 _cpuBurstTime = 5;
-                _ioBurstTime = 3;
+                _ioBurstTime = 10;
             }
 
             printf("Child Rcv! %d %d\n", _pid, _cpuBurstTime);
