@@ -29,18 +29,22 @@ struct MsgBuffer
 
 struct ParentToChildMsgBuffer : public MsgBuffer
 {
-    int timeSlice;
+    enum TYPE{
+        RESET, NONE
+    };
+    //TYPE type;
+    int type;
     
-    ParentToChildMsgBuffer(int timeSlice, int pid, int ipcKey)
+    ParentToChildMsgBuffer(int type, int pid, int ipcKey)
     : MsgBuffer(pid, ipcKey)
     {
-        this->timeSlice = timeSlice;
+        this->type = type;
     }
     
     ParentToChildMsgBuffer()
     : MsgBuffer(-1, -1)
     {
-        timeSlice = 0;
+        type = NONE;
     }
     
     ~ParentToChildMsgBuffer()

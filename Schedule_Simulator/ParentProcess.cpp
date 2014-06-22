@@ -16,6 +16,8 @@ ParentProcess::ParentProcess(int pid)
     _type = TYPE::PARENT;
     _this = this;
     _tick = 0;
+    
+
 }
 
 ParentProcess::~ParentProcess()
@@ -50,10 +52,6 @@ void ParentProcess::AddChildProcess(pid_t pid)
 
 void ParentProcess::NextProcess()
 {
-    _wait.push_back(_run.front());
-    _run.pop();
-    
-    _tick = 0;
 }
 
 void ParentProcess::_EventLog()
@@ -62,23 +60,27 @@ void ParentProcess::_EventLog()
     {
         ChildProcess* child = _run.front();
         
-        if(child->GetCPUBurstTime() <= 0)
-            return;
-    
+        _sndBuffer.type = child->GetCPUBurstTime() < 0 ?
+            ParentToChildMsgBuffer::RESET : ParentToChildMsgBuffer::NONE;
+
         _sndBuffer.pid = _pid;
         _sndBuffer.ipcKey = _ipcKey;
 
-        int res = msgsnd(child->GetIPCKey(), (void*)&_sndBuffer, sizeof(_sndBuffer), IPC_NOWAIT);
+        int res = msgsnd(child->GetIPCKey(), (void*)&_sndBuffer, sizeof(ParentToChildMsgBuffer), IPC_NOWAIT);
     
         if( res < 0)
         {
             //error
+            perror("msgsnd");
         }
         else
         {
             if( ++_tick > TIME_SLICE)
             {
-                NextProcess();
+                _run.push(_run.front());
+                _run.pop();
+
+                _tick = 0;
             }
         }
     }
@@ -146,7 +148,13 @@ void ParentProcess::Run()
             child->UpdateData(rcvBuffer);
             
             if(rcvBuffer.remainsCPUBurstTime <= 0)
-                NextProcess();
+            {
+                printf("Done! %d\n", rcvBuffer.pid);
+                _wait.push_back(_run.front());
+                _run.pop();
+                
+                _tick = 0;
+            }
         }
     }
 }

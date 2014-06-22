@@ -27,7 +27,7 @@ public:
 public:
     virtual void Run()
     {
-        //이제 할거 없어. 걱정말고 끝내
+        //init
         _cpuBurstTime = 5;
         _ioBurstTime = 3;
         
@@ -44,6 +44,12 @@ public:
             {
                 perror("msgrcv");
                 continue;
+            }
+            
+            if(rcvBuffer.type == ParentToChildMsgBuffer::RESET)
+            {
+                _cpuBurstTime = 5;
+                _ioBurstTime = 3;
             }
 
             printf("Child Rcv! %d %d\n", _pid, _cpuBurstTime);
